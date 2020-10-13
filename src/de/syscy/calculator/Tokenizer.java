@@ -36,5 +36,23 @@ public class Tokenizer extends LinkedList<Token> {
 				break;
 			}
 		}
+
+		fixBlockTokens();
+	}
+
+	public void fixBlockTokens() {
+		int blockCounter = 0;
+
+		for(Token token : this) {
+			if(token.getType() == TokenType.BLOCK_START) {
+				blockCounter++;
+			} else if(token.getType() == TokenType.BLOCK_END) {
+				blockCounter--;
+			}
+		}
+
+		for(int i = 0; i < blockCounter; i++) {
+			add(new Token(TokenType.BLOCK_END, ")"));
+		}
 	}
 }

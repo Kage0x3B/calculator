@@ -1,9 +1,8 @@
 package de.syscy.calculator;
 
-import de.syscy.calculator.expression.ConstantExpression;
-import de.syscy.calculator.expression.Expression;
-import de.syscy.calculator.expression.OperationExpression;
-import de.syscy.calculator.expression.OperationType;
+import de.syscy.calculator.expression.*;
+
+import java.util.Arrays;
 
 public class Parser {
 	private Token[] tokens;
@@ -12,9 +11,13 @@ public class Parser {
 	public Expression parse(Token[] tokens) {
 		this.tokens = tokens;
 
-		return parseNext().enforceOperatorPrecedence();
-		//TODO: Enable simplification again
-		//return parseNext().simplify();
+		return parseNext().enforceOperatorPrecedence().simplify();
+	}
+
+	public Expression parseBlock(Token[] blockTokens) {
+		this.tokens = blockTokens;
+
+		return parseNext();
 	}
 
 	private Token previous() {
@@ -59,6 +62,31 @@ public class Parser {
 				return parseOperation(leftExpression);
 			case OPERATOR:
 				throw new IllegalArgumentException("Expression without previous value");
+			case BLOCK_START:
+				int lastBlockEnd = -1;
+
+				// The tokenizer automatically inserts missing brackets at the end, this code doesn't have to worry about that
+				for(int i = currentIndex + 1; i < tokens.length; i++) {
+					TokenType type = tokens[i].getType();
+
+					if(type == TokenType.BLOCK_END) {
+						lastBlockEnd = i;
+					}
+				}
+
+				Token[] blockTokens = Arrays.copyOfRange(tokens, currentIndex + 1, lastBlockEnd);
+
+				System.out.println("Block from " + (currentIndex + 1) + " to " + lastBlockEnd);
+
+				Parser blockParser = new Parser();
+
+				currentIndex = lastBlockEnd + 1;
+
+				leftExpression = new BlockExpression(blockParser.parse(blockTokens));
+
+				return parseOperation(leftExpression);
+			case BLOCK_END:
+				throw new IllegalStateException("This should never be reached!");
 			default:
 				throw new RuntimeException("Operation '" + current().getType().name() + "' is not implemented");
 		}

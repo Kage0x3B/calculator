@@ -36,12 +36,12 @@ public class OperationExpression extends Expression {
 
 	@Override
 	public Expression simplify() {
+		this.leftValue = this.leftValue.simplify();
+		this.rightValue = this.rightValue.simplify();
+
 		if(leftValue instanceof ConstantExpression && rightValue instanceof ConstantExpression) {
 			return new ConstantExpression(calculate());
 		}
-
-		this.leftValue = this.leftValue.simplify();
-		this.rightValue = this.rightValue.simplify();
 
 		return this;
 	}
