@@ -1,5 +1,7 @@
 package de.syscy.calculator.expression;
 
+import de.syscy.calculator.ExpressionEnvironment;
+
 public class BlockExpression extends Expression {
 	private Expression innerExpression;
 
@@ -8,8 +10,8 @@ public class BlockExpression extends Expression {
 	}
 
 	@Override
-	public double calculate() {
-		return innerExpression.calculate();
+	public double calculate(ExpressionEnvironment environment) {
+		return innerExpression.calculate(environment);
 	}
 
 	@Override
@@ -22,6 +24,10 @@ public class BlockExpression extends Expression {
 	@Override
 	public Expression simplify() {
 		this.innerExpression = innerExpression.simplify();
+
+		if(this.innerExpression instanceof ConstantExpression) {
+			return this.innerExpression;
+		}
 
 		return this;
 	}

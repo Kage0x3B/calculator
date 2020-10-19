@@ -1,4 +1,4 @@
-package de.syscy.calculator;
+package de.syscy.calculator.tokenizer;
 
 public class Token {
 	private TokenType type;

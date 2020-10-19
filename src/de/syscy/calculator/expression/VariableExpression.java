@@ -2,20 +2,16 @@ package de.syscy.calculator.expression;
 
 import de.syscy.calculator.ExpressionEnvironment;
 
-public class ConstantExpression extends Expression {
-	private double value;
+public class VariableExpression extends Expression {
+	private String name;
 
-	public ConstantExpression(double value) {
-		this.value = value;
-	}
-
-	public double getValue() {
-		return value;
+	public VariableExpression(String name) {
+		this.name = name;
 	}
 
 	@Override
 	public double calculate(ExpressionEnvironment environment) {
-		return value;
+		return environment.getVariableValue(name);
 	}
 
 	@Override
@@ -30,6 +26,6 @@ public class ConstantExpression extends Expression {
 
 	@Override
 	public String toString() {
-		return "Const{" + "v=" + value + '}';
+		return "Var{" + "n=" + name + "}";
 	}
 }

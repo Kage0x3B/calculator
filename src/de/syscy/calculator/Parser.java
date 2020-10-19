@@ -1,8 +1,11 @@
 package de.syscy.calculator;
 
 import de.syscy.calculator.expression.*;
+import de.syscy.calculator.tokenizer.Token;
+import de.syscy.calculator.tokenizer.TokenType;
 
 import java.util.Arrays;
+import java.util.function.Function;
 
 public class Parser {
 	private Token[] tokens;
@@ -11,13 +14,13 @@ public class Parser {
 	public Expression parse(Token[] tokens) {
 		this.tokens = tokens;
 
-		return parseNext().enforceOperatorPrecedence().simplify();
+		return parseNext().enforceOperatorPrecedence();
 	}
 
 	public Expression parseBlock(Token[] blockTokens) {
 		this.tokens = blockTokens;
 
-		return parseNext();
+		return parseNext().enforceOperatorPrecedence();
 	}
 
 	private Token previous() {
@@ -50,6 +53,31 @@ public class Parser {
 		}
 
 		switch(current().getType()) {
+			case NAME:
+				Token nameToken = current();
+				Token nextToken = next();
+
+				if(nextToken != null && nextToken.getType() == TokenType.BLOCK_START) {
+					Function<Double, Double> function = FunctionList.getFunction(nameToken.getText());
+
+					if(function == null) {
+						throw new IllegalArgumentException("Math function '" + nameToken.getText() + "' not found, check the supported functions or add a custom function");
+					}
+
+					currentIndex++;
+
+					return new FunctionExpression(nameToken.getText(), function, parseNext());
+				} else {
+					Expression leftExpression = new VariableExpression(nameToken.getText());
+
+					if(currentIndex >= tokens.length - 1) {
+						return leftExpression;
+					}
+
+					currentIndex++;
+
+					return parseOperation(leftExpression);
+				}
 			case NUMBER:
 				Expression leftExpression = parseConstant();
 
@@ -82,9 +110,9 @@ public class Parser {
 
 				currentIndex = lastBlockEnd + 1;
 
-				leftExpression = new BlockExpression(blockParser.parse(blockTokens));
+				leftExpression = new BlockExpression(blockParser.parseBlock(blockTokens));
 
-				return parseOperation(leftExpression);
+				return leftExpression;
 			case BLOCK_END:
 				throw new IllegalStateException("This should never be reached!");
 			default:
@@ -102,10 +130,10 @@ public class Parser {
 
 	public Expression parseOperation(Expression leftExpression) {
 		if(current() == null || current().getType() != TokenType.OPERATOR) {
-			throw new IllegalArgumentException("Number must be followed by an operation");
+			throw new IllegalArgumentException("Number must be followed by an operation at " + current() + " (index: " + currentIndex + ")");
 		}
 
-		OperationType operationType = OperationType.fromSymbol(current().getText().charAt(0));
+		OperationType operationType = OperationType.fromSymbol(current().getText());
 
 		if(operationType == null) {
 			throw new IllegalArgumentException("Invalid operation '" + current().getText().charAt(0) + "'");

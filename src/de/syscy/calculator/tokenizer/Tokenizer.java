@@ -1,10 +1,10 @@
-package de.syscy.calculator;
+package de.syscy.calculator.tokenizer;
 
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 
 public class Tokenizer extends LinkedList<Token> {
-	private static final String CLEAN_REGEX = "[^\\w\\d.,+\\-*/%()]";
+	private static final String CLEAN_REGEX = "[^\\w\\d.,+\\-*/%()&|_]";
 
 	public void tokenize(String expression) {
 		clear();

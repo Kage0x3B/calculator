@@ -1,5 +1,7 @@
 package de.syscy.calculator.expression;
 
+import de.syscy.calculator.ExpressionEnvironment;
+
 public class OperationExpression extends Expression {
 	private OperationType operationType;
 	private Expression leftValue;
@@ -12,19 +14,27 @@ public class OperationExpression extends Expression {
 	}
 
 	@Override
-	public double calculate() {
-		return operationType.execute(leftValue.calculate(), rightValue.calculate());
+	public double calculate(ExpressionEnvironment environment) {
+		return operationType.execute(leftValue.calculate(environment), rightValue.calculate(environment));
 	}
 
 	@Override
 	public Expression enforceOperatorPrecedence() {
-		if(rightValue instanceof OperationExpression) {
-			OperationExpression rightOp = (OperationExpression) rightValue;
+		boolean changed = true;
 
-			if(rightOp.operationType.getOperatorPrecedence() < this.operationType.getOperatorPrecedence()) {
-				this.leftValue = new OperationExpression(this.operationType, this.leftValue, rightOp.leftValue);
-				this.operationType = rightOp.operationType;
-				this.rightValue = rightOp.rightValue;
+		while(changed) {
+			changed = false;
+
+			if(rightValue instanceof OperationExpression) {
+				OperationExpression rightOp = (OperationExpression) rightValue;
+
+				if(rightOp.operationType.getOperatorPrecedence() > this.operationType.getOperatorPrecedence()) {
+					this.leftValue = new OperationExpression(this.operationType, this.leftValue, rightOp.leftValue);
+					this.operationType = rightOp.operationType;
+					this.rightValue = rightOp.rightValue;
+
+					changed = true;
+				}
 			}
 		}
 
@@ -40,7 +50,7 @@ public class OperationExpression extends Expression {
 		this.rightValue = this.rightValue.simplify();
 
 		if(leftValue instanceof ConstantExpression && rightValue instanceof ConstantExpression) {
-			return new ConstantExpression(calculate());
+			return new ConstantExpression(operationType.execute(((ConstantExpression) leftValue).getValue(), ((ConstantExpression) rightValue).getValue()));
 		}
 
 		return this;

@@ -1,10 +1,11 @@
-package de.syscy.calculator;
+package de.syscy.calculator.tokenizer;
 
 import java.util.regex.Pattern;
 
 public enum TokenType {
+	NAME("([A-Za-z_])+"),
 	NUMBER("(\\d*[.,]?[\\d]+)"),
-	OPERATOR("[+\\-\\*/%]"),
+	OPERATOR("(&&|\\|\\||\\*\\*|[+\\-\\*/%])"),
 	BLOCK_START("[(]"),
 	BLOCK_END("[)]");
 
