@@ -1,0 +1,10 @@
+OperatorPrecedence.java
+ OperatorPrecedence
+Division.java
+ Division
+Subtraction.java
+ Subtraction
+Addition.java
+ Addition
+VATFunction.java
+ VATFunction

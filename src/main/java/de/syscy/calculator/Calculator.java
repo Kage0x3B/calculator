@@ -7,6 +7,17 @@ import de.syscy.calculator.tokenizer.Tokenizer;
 import java.util.Scanner;
 
 public class Calculator {
+	public static double calculate(String expressionString) {
+		ExpressionEnvironment expressionEnvironment = new ExpressionEnvironment();
+		Tokenizer tokenizer = new Tokenizer();
+		tokenizer.tokenize(expressionString);
+
+		Parser parser = new Parser();
+		Expression expression = parser.parse(tokenizer.toArray(new Token[0]));
+
+		return expression.calculate(expressionEnvironment);
+	}
+
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
 
@@ -48,7 +59,7 @@ public class Calculator {
 			Tokenizer tokenizer = new Tokenizer();
 			tokenizer.tokenize(expressionString);
 
-			tokenizer.forEach(System.out::println);
+			//tokenizer.forEach(System.out::println);
 
 			Parser parser = new Parser();
 			Expression expression = parser.parse(tokenizer.toArray(new Token[0]));

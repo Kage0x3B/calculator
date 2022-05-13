@@ -43,4 +43,12 @@ public class FunctionList {
 
 		return functionMap.get(name);
 	}
+
+	static {
+		double vatPercentage = Double.parseDouble(System.getProperty("VAT_PERCENT", "19")) / 100.0;
+		Function<Double, Double> calculateVatFunction = (value) -> value * vatPercentage;
+
+		addFunction("calculateVat", calculateVatFunction);
+		addFunction("vat", calculateVatFunction);
+	}
 }

@@ -14,13 +14,13 @@ public class Parser {
 	public Expression parse(Token[] tokens) {
 		this.tokens = tokens;
 
-		return parseNext().enforceOperatorPrecedence();
+		return parseNext();
 	}
 
 	public Expression parseBlock(Token[] blockTokens) {
 		this.tokens = blockTokens;
 
-		return parseNext().enforceOperatorPrecedence();
+		return parseNext();
 	}
 
 	private Token previous() {
@@ -89,7 +89,7 @@ public class Parser {
 
 				return parseOperation(leftExpression);
 			case OPERATOR:
-				throw new IllegalArgumentException("Expression without previous value");
+				return parseConstantWithSign();
 			case BLOCK_START:
 				int lastBlockEnd = -1;
 
@@ -120,7 +120,39 @@ public class Parser {
 		}
 	}
 
-	public Expression parseConstant() {
+	public Expression parseConstantWithSign() {
+		OperationType operationType = OperationType.fromSymbol(current().getText());
+
+		if(operationType == null) {
+			throw new IllegalArgumentException("Invalid operation '" + current().getText().charAt(0) + "'");
+		}
+
+		if(operationType != OperationType.ADDITION && operationType != OperationType.SUBTRACTION) {
+			throw new IllegalArgumentException("Operation expression without previous value");
+		}
+
+		currentIndex++;
+
+		ConstantExpression constantValue = parseConstant();
+
+		if(operationType == OperationType.ADDITION) {
+			constantValue = new ConstantExpression(+constantValue.getValue());
+		}
+
+		if(operationType == OperationType.SUBTRACTION) {
+			constantValue = new ConstantExpression(-constantValue.getValue());
+		}
+
+		if(currentIndex >= tokens.length - 1) {
+			return constantValue;
+		}
+
+		currentIndex++;
+
+		return parseOperation(constantValue);
+	}
+
+	public ConstantExpression parseConstant() {
 		if(current() == null) {
 			return new ConstantExpression(0);
 		}
